@@ -1,0 +1,1 @@
+Slag is to be a simple browser-based messenger powered by Node.js and sockets.io
