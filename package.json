@@ -4,6 +4,12 @@
   "description": "This is Slag",
   "dependencies": {
     "express": "~4.4.1",
-    "socket.io": "~1.0.4"
+    "socket.io": "~1.0.4",
+    "passport": "~0.2.0",
+    "passport-google": "~0.3.0",
+    "passport-oauth": "~1.0.0",
+    "express-session": "~1.2.1",
+    "cookie-parser": "~1.1.0",
+    "request": "~2.36.0"
   }
 }
