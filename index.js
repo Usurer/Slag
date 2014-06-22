@@ -19,6 +19,8 @@ io.on('connection', function(socket){
   });
 });
 
+var testAccessToken;
+
 app.use(cookieParser()); // required before session.
 app.use(session({
     secret: 'keyboard cat'
@@ -46,8 +48,12 @@ passport.use('google', new OAuth2Strategy({
     callbackURL: 'http://slag.com:3000/oauth2callback'
   },
   function(accessToken, refreshToken, profile, done) {
-  	console.log(profile);
-   done(null, profile);
+    console.log(accessToken);
+    console.log(refreshToken);
+    console.log(profile);
+    console.log(done);
+    testAccessToken = accessToken;
+    done(null, profile);
   }
 ));
 
@@ -63,7 +69,29 @@ app.get('/', function(req, res){
   res.sendfile('index.html');
 });
 
-app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
+app.get('/auth/google', passport.authenticate(
+    'google', 
+    { 
+      scope: [
+        'email', 
+        'profile', 
+        'https://www.googleapis.com/auth/plus.me', 
+        'https://www.googleapis.com/auth/plus.profile.emails.read'] }
+    )
+);
+
+// TODO: Use it inside /auth/google handler
+function AuthUser() {
+  passport.authenticate(
+    'google', 
+    { 
+      scope: [
+        'email', 
+        'profile', 
+        'https://www.googleapis.com/auth/plus.me', 
+        'https://www.googleapis.com/auth/plus.profile.emails.read'] }
+    )
+}
 
 // Google will redirect the user to this URL after authentication.  Finish
 // the process by verifying the assertion.  If valid, the user will be
@@ -73,11 +101,41 @@ app.get('/oauth2callback',
                                     failureRedirect: '/loginError' }));
 
 app.get('/loggedIn', function(req, res){
-  res.send('Logged in');
+  res.send('Logged in. Use /userInfo endpoint to get more info');  
 });
 
 app.get('/loginError', function(req, res){
   res.send('Error');
+});
+
+app.get('/userInfo', function(req, res) {
+  console.log(testAccessToken);
+  if(typeof testAccessToken === 'undefined' || testAccessToken.length < 1)  {
+     AuthUser();     
+  };
+
+  var requestOptions = {
+    url: 'https://www.googleapis.com/plus/v1/people/me',
+    /*timeout: 5000,*/
+    headers: {
+      'Authorization': 'Bearer ' + testAccessToken
+    }
+  };
+  var requestCallback = function(error, response, body) {
+    console.log(error);
+    //console.log(response);
+    //console.log(body);
+    if(error != null) {
+      res.send('ERROR');  
+      res.send(error.code); 
+    } else {
+      console.log(body);
+      var bodyObj = JSON.parse(body);
+      console.log(bodyObj.displayName);
+      res.send('Hi, ' + bodyObj.displayName + '!');      
+    }
+  };
+  request(requestOptions, requestCallback);
 });
 
 http.listen(3000, function(){
