@@ -22,6 +22,8 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
+/*######### Passport #########*/
+
 passport.use('google', new OAuth2Strategy({
 	authorizationURL: 'https://accounts.google.com/o/oauth2/auth',
     tokenURL: 'https://accounts.google.com/o/oauth2/token',
@@ -55,6 +57,10 @@ function GetAuthenticationFunction() {
     )
 };
 
+/*#########*/
+
+/*######### Google APIs #########*/
+
 function GetUserInfoAPIRequestOptions(res) {
   return {
     url: 'https://www.googleapis.com/plus/v1/people/me',
@@ -76,6 +82,8 @@ function GetUserInfoAPIRequestCallback(res) {
     }
   };
 };
+
+/*#########*/
 
 /*######### Sockets.IO #########*/
 
